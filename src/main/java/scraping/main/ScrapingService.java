@@ -16,6 +16,7 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -37,7 +38,17 @@ public class ScrapingService {
 
     public ScrapingService(String startPoint, String destination, String leaveDate, String returnDate) {
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless"); // Enable headless mode
+        options.addArguments("--disable-gpu"); // Applicable for Windows environment to avoid crash
+        options.addArguments("--no-sandbox"); // Bypass OS security model
+        options.addArguments("--disable-dev-shm-usage"); // Overcome limited resource problems
+        options.addArguments("--window-size=1920x1080"); // Set window size to avoid element not interactable issues
+        options.addArguments("--start-maximized");
+
+        driver = new ChromeDriver(options);
+  
         this.startPoint = startPoint;
         this.destination = destination;
         this.leaveDate = leaveDate;
