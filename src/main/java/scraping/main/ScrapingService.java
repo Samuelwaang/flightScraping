@@ -95,7 +95,7 @@ public class ScrapingService {
             js.executeScript("window.scrollBy(0,-1000)", "");
 
             Flight flight = new Flight();
-            //System.out.println(flights.get(i).getText());
+            System.out.println(flights.get(i).getText());
             saveData(flight, flights.get(i));
             ScrollEntity scrollEntity = findLinkWithScroll(flights.get(i), scrollAmount, flight, i);
             scrollAmount = scrollEntity.getScroll();
