@@ -37,16 +37,7 @@ public class ScrapingService {
 
 
     public ScrapingService(String startPoint, String destination, String leaveDate, String returnDate) {
-        // WebDriverManager.chromedriver().setup();
-
-        // ChromeOptions options = new ChromeOptions();
-        // options.setBinary("/usr/bin/chromium-browser");
-        // options.addArguments("--headless"); // Enable headless mode
-        // options.addArguments("--disable-gpu"); // Applicable for Windows environment to avoid crash
-        // options.addArguments("--no-sandbox"); // Bypass OS security model
-        // options.addArguments("--disable-dev-shm-usage"); // Overcome limited resource problems
-        // options.addArguments("--window-size=1920x1080"); // Set window size to avoid element not interactable issues
-        // options.addArguments("--start-maximized");
+        WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
         options.setBinary("/usr/bin/google-chrome");
@@ -55,10 +46,8 @@ public class ScrapingService {
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--remote-allow-origins=*");
 
-        System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
-
         driver = new ChromeDriver(options);
-  
+
         this.startPoint = startPoint;
         this.destination = destination;
         this.leaveDate = leaveDate;
@@ -66,6 +55,35 @@ public class ScrapingService {
         this.link = "https://www.google.com/travel/flights?q=flights+from+" + startPoint + "+to+" + destination + "+on+" + leaveDate + "+through+" + returnDate;
 
         driver.get(link);
+        // WebDriverManager.chromedriver().setup();
+
+        // // ChromeOptions options = new ChromeOptions();
+        // // options.setBinary("/usr/bin/chromium-browser");
+        // // options.addArguments("--headless"); // Enable headless mode
+        // // options.addArguments("--disable-gpu"); // Applicable for Windows environment to avoid crash
+        // // options.addArguments("--no-sandbox"); // Bypass OS security model
+        // // options.addArguments("--disable-dev-shm-usage"); // Overcome limited resource problems
+        // // options.addArguments("--window-size=1920x1080"); // Set window size to avoid element not interactable issues
+        // // options.addArguments("--start-maximized");
+
+        // ChromeOptions options = new ChromeOptions();
+        // options.setBinary("/usr/bin/google-chrome");
+        // options.addArguments("--headless");
+        // options.addArguments("--no-sandbox");
+        // options.addArguments("--disable-dev-shm-usage");
+        // options.addArguments("--remote-allow-origins=*");
+
+        // //System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
+
+        // driver = new ChromeDriver(options);
+  
+        // this.startPoint = startPoint;
+        // this.destination = destination;
+        // this.leaveDate = leaveDate;
+        // this.returnDate = returnDate;
+        // this.link = "https://www.google.com/travel/flights?q=flights+from+" + startPoint + "+to+" + destination + "+on+" + leaveDate + "+through+" + returnDate;
+
+        // driver.get(link);
     }
 
 

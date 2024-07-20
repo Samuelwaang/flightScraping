@@ -27,14 +27,9 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ChromeDriver
-RUN CHROMEDRIVER_VERSION=126.0.6478.182 \
-    && wget -N https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.182/linux64/chromedriver-linux64.zip -P /tmp/ \
-    && unzip /tmp/chromedriver-linux64.zip -d /tmp/ \
-    && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/ \
-    && rm -rf /tmp/chromedriver-linux64 \
-    && rm /tmp/chromedriver-linux64.zip \
-    && chmod +x /usr/local/bin/chromedriver
+RUN google-chrome --version
+
+# Remove ChromeDriver installation steps
 
 # Add your application jar to the container
 COPY --from=build /target/demo-0.0.1-SNAPSHOT.jar /app/demo.jar
