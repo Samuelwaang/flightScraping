@@ -37,14 +37,32 @@ public class ScrapingService {
 
 
     public ScrapingService(String startPoint, String destination, String leaveDate, String returnDate) {
-        WebDriverManager.chromedriver().setup();
+        // uncomment for completely new startup only
+        // WebDriverManager.chromedriver().setup(); 
+        
 
         ChromeOptions options = new ChromeOptions();
-        options.setBinary("/usr/bin/google-chrome");
+        //options.setBinary("/usr/bin/google-chrome");
         options.addArguments("--headless");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--remote-allow-origins=*");
+        // options.addArguments("--no-sandbox");
+        // options.addArguments("--disable-dev-shm-usage");
+        // options.addArguments("--remote-allow-origins=*");
+
+
+        options.addArguments("--disable-gpu"); // Applicable for Windows environment to avoid crash
+        options.addArguments("--no-sandbox"); // Bypass OS security model
+        options.addArguments("--disable-dev-shm-usage"); // Overcome limited resource problems
+        options.addArguments("--window-size=1920x1080"); // Set window size to avoid element not interactable issues
+        options.addArguments("--start-maximized");
+
+        // WebDriverManager.chromedriver().setup();
+
+        // ChromeOptions options = new ChromeOptions();
+        // options.addArguments("--disable-gpu"); // Applicable for Windows environment to avoid crash
+        // options.addArguments("--no-sandbox"); // Bypass OS security model
+        // options.addArguments("--disable-dev-shm-usage"); // Overcome limited resource problems
+        // options.addArguments("--window-size=1920x1080"); // Set window size to avoid element not interactable issues
+        // options.addArguments("--start-maximized");
 
         driver = new ChromeDriver(options);
 
@@ -55,35 +73,6 @@ public class ScrapingService {
         this.link = "https://www.google.com/travel/flights?q=flights+from+" + startPoint + "+to+" + destination + "+on+" + leaveDate + "+through+" + returnDate;
 
         driver.get(link);
-        // WebDriverManager.chromedriver().setup();
-
-        // // ChromeOptions options = new ChromeOptions();
-        // // options.setBinary("/usr/bin/chromium-browser");
-        // // options.addArguments("--headless"); // Enable headless mode
-        // // options.addArguments("--disable-gpu"); // Applicable for Windows environment to avoid crash
-        // // options.addArguments("--no-sandbox"); // Bypass OS security model
-        // // options.addArguments("--disable-dev-shm-usage"); // Overcome limited resource problems
-        // // options.addArguments("--window-size=1920x1080"); // Set window size to avoid element not interactable issues
-        // // options.addArguments("--start-maximized");
-
-        // ChromeOptions options = new ChromeOptions();
-        // options.setBinary("/usr/bin/google-chrome");
-        // options.addArguments("--headless");
-        // options.addArguments("--no-sandbox");
-        // options.addArguments("--disable-dev-shm-usage");
-        // options.addArguments("--remote-allow-origins=*");
-
-        // //System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
-
-        // driver = new ChromeDriver(options);
-  
-        // this.startPoint = startPoint;
-        // this.destination = destination;
-        // this.leaveDate = leaveDate;
-        // this.returnDate = returnDate;
-        // this.link = "https://www.google.com/travel/flights?q=flights+from+" + startPoint + "+to+" + destination + "+on+" + leaveDate + "+through+" + returnDate;
-
-        // driver.get(link);
     }
 
 
@@ -102,6 +91,7 @@ public class ScrapingService {
         driver.get("https://www.google.com/travel/flights?q=flights+from+rno+to+san+on+2024-08-13+through+2024-08-15");
 
         for(int i = 0; i < flights.size(); i++) {
+            Flight flight = new Flight();
             js.executeScript("window.scrollBy(0,10000)", "");
             button = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".zISZ5c.QB2Jof")));
             Thread.sleep(1000);
@@ -112,7 +102,6 @@ public class ScrapingService {
             Thread.sleep(500);
             js.executeScript("window.scrollBy(0,-1000)", "");
 
-            Flight flight = new Flight();
             System.out.println(flights.get(i).getText());
             saveData(flight, flights.get(i));
             ScrollEntity scrollEntity = findLinkWithScroll(flights.get(i), scrollAmount, flight, i);
@@ -175,7 +164,8 @@ public class ScrapingService {
         catch(Exception e) { 
             e.printStackTrace();
         }
-        
+
+        Thread.sleep(2000);
         List<WebElement> flights = retryFindElements(".pIav2d", 20, null);
 
         flights = retryFindElements(".pIav2d", 20, null);
@@ -327,7 +317,8 @@ public class ScrapingService {
         flight.setArrivalTime(result2);
 
         // duration
-        String flightTime = retryFindElement(".gvkrdb.AdWm1c.tPgKwe.ogfYpf", 20, flightData).getText();
+        String flightTime = driver.findElement(By.cssSelector("div.gvkrdb.AdWm1c.tPgKwe.ogfYpf")).getText();
+        System.out.println("time element: " + flightTime);
         String[] timeSplit = flightTime.split(" ");
         int hours = 0;
         int min = 0;
@@ -342,7 +333,6 @@ public class ScrapingService {
             flight.setTime(hours * 60 + min);
         }
         
-
         return flight;
     }
 
