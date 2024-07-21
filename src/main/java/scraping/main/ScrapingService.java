@@ -266,7 +266,7 @@ public class ScrapingService {
         return null;
     }
 
-    public Flight saveData(Flight flight, WebElement flightData) {
+    public Flight saveData(Flight flight, WebElement flightData) throws InterruptedException {
         String input = flightData.getText();
         double price = -1;
         String[] dataLines = input.split("\n");
@@ -281,21 +281,21 @@ public class ScrapingService {
             }
 
             // duration of flight
-            if(dataLines[i].contains("hr")) {
-                String[] timeSplit = dataLines[i].split(" ");
-                int hours = 0;
-                int min = 0;
-                if(timeSplit.length == 2) {
-                    hours = Integer.parseInt(timeSplit[0]);
-                }
-                if(timeSplit.length == 4) {
-                    hours = Integer.parseInt(timeSplit[0]);
-                    min = Integer.parseInt(timeSplit[2]);
-                }
-                if(timeSplit.length == 2 | timeSplit.length == 4) {
-                    flight.setTime(hours * 60 + min);
-                }
-            }
+            // if(dataLines[i].contains("hr")) {
+            //     String[] timeSplit = dataLines[i].split(" ");
+            //     int hours = 0;
+            //     int min = 0;
+            //     if(timeSplit.length == 2) {
+            //         hours = Integer.parseInt(timeSplit[0]);
+            //     }
+            //     if(timeSplit.length == 4) {
+            //         hours = Integer.parseInt(timeSplit[0]);
+            //         min = Integer.parseInt(timeSplit[2]);
+            //     }
+            //     if(timeSplit.length == 2 | timeSplit.length == 4) {
+            //         flight.setTime(hours * 60 + min);
+            //     }
+            // }
 
             // stops
             if(dataLines[i].contains("stop")) {
@@ -325,6 +325,23 @@ public class ScrapingService {
         }
         String result2 = dataLines[2].substring(0, indexToRemoveArrive) + dataLines[2].substring(indexToRemoveArrive + 1);
         flight.setArrivalTime(result2);
+
+        // duration
+        String flightTime = retryFindElement(".gvkrdb.AdWm1c.tPgKwe.ogfYpf", 20, flightData).getText();
+        String[] timeSplit = flightTime.split(" ");
+        int hours = 0;
+        int min = 0;
+        if(timeSplit.length == 2) {
+            hours = Integer.parseInt(timeSplit[0]);
+        }
+        if(timeSplit.length == 4) {
+            hours = Integer.parseInt(timeSplit[0]);
+            min = Integer.parseInt(timeSplit[2]);
+        }
+        if(timeSplit.length == 2 | timeSplit.length == 4) {
+            flight.setTime(hours * 60 + min);
+        }
+        
 
         return flight;
     }
