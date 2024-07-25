@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     xvfb \
     libxi6 \
-    libgconf-2-4 \
+    # libgconf-2-4 \
     libnss3 \
     libfontconfig1 \
     libxcb1 \
