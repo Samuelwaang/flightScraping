@@ -23,7 +23,6 @@ public class ScrapeController {
         }
         catch(Exception e) {
             e.printStackTrace();
-        
 
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }

@@ -1,28 +1,22 @@
 package scraping.main;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.springframework.stereotype.Service;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.Data;
 
 @Data
@@ -120,7 +114,7 @@ public class ScrapingService {
     
             return flightList;
         }
-        catch(IndexOutOfBoundsException e) {
+        catch(IndexOutOfBoundsException | IllegalArgumentException e) {
             return flightList;
         }
 
@@ -276,34 +270,47 @@ public class ScrapingService {
                 flight.setPrice(price);
             }
 
-            // duration of flight
-            // if(dataLines[i].contains("hr")) {
-            //     String[] timeSplit = dataLines[i].split(" ");
-            //     int hours = 0;
-            //     int min = 0;
-            //     if(timeSplit.length == 2) {
-            //         hours = Integer.parseInt(timeSplit[0]);
-            //     }
-            //     if(timeSplit.length == 4) {
-            //         hours = Integer.parseInt(timeSplit[0]);
-            //         min = Integer.parseInt(timeSplit[2]);
-            //     }
-            //     if(timeSplit.length == 2 | timeSplit.length == 4) {
-            //         flight.setTime(hours * 60 + min);
-            //     }
-            // }
-
             // stops
             if(dataLines[i].contains("stop")) {
                 String locations = startPoint + "-";
+                List<Stop> stops = new ArrayList<>();
+                int numStops = 0;
                 if(!dataLines[i].equals("Nonstop")) {
-                    int numStops = Integer.parseInt(dataLines[i].substring(0, 1));
+                    numStops = Integer.parseInt(dataLines[i].substring(0, 1));
                     for(int j = 0; j < numStops; j++) {
-                        locations += dataLines[i + j] + "-";
+                        // adding data to "stops" attribute
+                        String stopsString = dataLines[i + j + 1];  
+                        String[] stopsStringSplit = stopsString.split(" ");
+                        int hours = 0;
+                        int min = 0;
+                        Stop stop = new Stop();
+
+                        if(stopsStringSplit.length == 3) {
+                            hours = Integer.parseInt(stopsStringSplit[0]);
+                            stop = new Stop();
+                            // sets the stop's location
+                            stop.setLocation(stopsStringSplit[2]);
+                            // sets the duration of the stop
+                            hours = Integer.parseInt(stopsStringSplit[0]);
+                        }
+                        if(stopsStringSplit.length == 5) {
+                            hours = Integer.parseInt(stopsStringSplit[0]);
+                            min = Integer.parseInt(stopsStringSplit[2]);
+                            stop = new Stop();
+                            // sets the stop's location
+                            stop.setLocation(stopsStringSplit[4]);
+                            // sets the duration of the stop
+                            hours = Integer.parseInt(stopsStringSplit[0]);
+                            min = Integer.parseInt(stopsStringSplit[2]);
+                        }
+                        stop.setTime(hours * 60 + min);
+                        stops.add(stop);
                     }
+
                 }
                 locations += destination;
-                flight.setLocation(locations);
+                flight.setStops(stops);
+                flight.setNumStops(numStops);
             }
         }
         // leave time
@@ -341,11 +348,4 @@ public class ScrapingService {
         
         return flight;
     }
-
-
-    public static void main(String[] args) throws InterruptedException {
-        ScrapingService test1 = new ScrapingService("rno", "san", "2024-08-13", "2024-08-13");
-        test1.scrape();
-    }
-    
 }
