@@ -17,6 +17,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.Data;
 
 @Data
@@ -85,31 +86,37 @@ public class ScrapingService {
     
             driver.get("https://www.google.com/travel/flights?q=flights+from+rno+to+san+on+2024-08-13+through+2024-08-15");
     
-            for(int i = 0; i < flights.size(); i++) {
-                Flight flight = new Flight();
-                js.executeScript("window.scrollBy(0,10000)", "");
-                button = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".zISZ5c.QB2Jof")));
-                Thread.sleep(1000);
-                button.click();
-                Thread.sleep(2000);
-                
-                flights = retryFindElements(".pIav2d", 20, null);
-                Thread.sleep(500);
-                js.executeScript("window.scrollBy(0,-1000)", "");
-    
-                System.out.println(flights.get(i).getText());
-                saveData(flight, flights.get(i));
-                ScrollEntity scrollEntity = findLinkWithScroll(flights.get(i), scrollAmount, flight, i);
-                scrollAmount = scrollEntity.getScroll();
-    
-                flight.setLink(scrollEntity.getLink());
-                flight.setFlightStart(startPoint);
-                flight.setFlightDestination(destination);
-                flight.setLeaveDate(leaveDate);
-                flight.setReturnDay(returnDate);
-                System.out.println(flight);
-    
-                flightList.add(flight);
+            // 10 iterations for testing
+            for(int i = 0; i < 5; i++) {
+                try {
+                    Flight flight = new Flight();
+                    js.executeScript("window.scrollBy(0,10000)", "");
+                    button = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".zISZ5c.QB2Jof")));
+                    Thread.sleep(1000);
+                    button.click();
+                    Thread.sleep(2000);
+                    
+                    flights = retryFindElements(".pIav2d", 20, null);
+                    Thread.sleep(500);
+                    js.executeScript("window.scrollBy(0,-1000)", "");
+        
+                    System.out.println(flights.get(i).getText());
+                    saveData(flight, flights.get(i));
+                    ScrollEntity scrollEntity = findLinkWithScroll(flights.get(i), scrollAmount, flight, i);
+                    scrollAmount = scrollEntity.getScroll();
+        
+                    flight.setLink(scrollEntity.getLink());
+                    flight.setFlightStart(startPoint);
+                    flight.setFlightDestination(destination);
+                    flight.setLeaveDate(leaveDate);
+                    flight.setReturnDay(returnDate);
+                    System.out.println(flight);
+        
+                    flightList.add(flight);
+                }
+                catch(NoSuchElementException e) {
+                    continue;
+                }
             }
     
             return flightList;
