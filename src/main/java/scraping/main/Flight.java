@@ -21,4 +21,5 @@ public class Flight {
     @CollectionTable(name = "flight_stops")
     private List<Stop> stops;
     private int numStops;
+    private String flightImpactLink;
 }

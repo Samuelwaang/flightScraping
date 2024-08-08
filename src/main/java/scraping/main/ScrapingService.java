@@ -84,10 +84,10 @@ public class ScrapingService {
             
             List<WebElement> flights = retryFindElements(".pIav2d", 20, null);
     
-            driver.get("https://www.google.com/travel/flights?q=flights+from+rno+to+san+on+2024-08-13+through+2024-08-15");
+            driver.get(link);
     
-            // 10 iterations for testing
-            for(int i = 0; i < 5; i++) {
+            // 10 iterations for testing, normally use flights.size()
+            for(int i = 0; i < flights.size(); i++) {
                 try {
                     Flight flight = new Flight();
                     js.executeScript("window.scrollBy(0,10000)", "");
@@ -98,7 +98,7 @@ public class ScrapingService {
                     
                     flights = retryFindElements(".pIav2d", 20, null);
                     Thread.sleep(500);
-                    js.executeScript("window.scrollBy(0,-1000)", "");
+                    js.executeScript("window.scrollBy(0,-10000)", "");
         
                     System.out.println(flights.get(i).getText());
                     saveData(flight, flights.get(i));
@@ -352,6 +352,11 @@ public class ScrapingService {
         if(timeSplit.length == 2 | timeSplit.length == 4) {
             flight.setTime(hours * 60 + min);
         }
+
+        // travel impact link (for identifying the flights) 
+        WebElement element = flightData.findElement(By.cssSelector("div.NZRfve"));
+        String url = element.getAttribute("data-travelimpactmodelwebsiteurl");
+        flight.setFlightImpactLink(url);
         
         return flight;
     }
