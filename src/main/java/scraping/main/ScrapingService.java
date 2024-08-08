@@ -279,7 +279,6 @@ public class ScrapingService {
 
             // stops
             if(dataLines[i].contains("stop")) {
-                String locations = startPoint + "-";
                 List<Stop> stops = new ArrayList<>();
                 int numStops = 0;
                 if(!dataLines[i].equals("Nonstop")) {
@@ -315,7 +314,6 @@ public class ScrapingService {
                     }
 
                 }
-                locations += destination;
                 flight.setStops(stops);
                 flight.setNumStops(numStops);
             }
@@ -337,7 +335,7 @@ public class ScrapingService {
         flight.setArrivalTime(result2);
 
         // duration
-        String flightTime = driver.findElement(By.cssSelector("div.gvkrdb.AdWm1c.tPgKwe.ogfYpf")).getText();
+        String flightTime = flightData.findElement(By.cssSelector("div.gvkrdb.AdWm1c.tPgKwe.ogfYpf")).getText();
         System.out.println("time element: " + flightTime);
         String[] timeSplit = flightTime.split(" ");
         int hours = 0;
