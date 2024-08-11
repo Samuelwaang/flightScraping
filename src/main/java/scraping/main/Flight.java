@@ -22,4 +22,12 @@ public class Flight {
     private List<Stop> stops;
     private int numStops;
     private String flightImpactLink;
+
+    // return flight data
+    private String returnLeaveTime;
+    private String returnArrivalTime;
+    @CollectionTable(name = "return_flight_stops")
+    private List<Stop> returnStops;
+    private int returnNumStops;
+    private int returnTime;
 }

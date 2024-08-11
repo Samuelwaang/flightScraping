@@ -33,12 +33,12 @@ public class ScrapingService {
 
     public ScrapingService(String startPoint, String destination, String leaveDate, String returnDate) {
         // uncomment for completely new startup only
-        // WebDriverManager.chromedriver().setup(); 
+         WebDriverManager.chromedriver().setup(); 
         
 
         ChromeOptions options = new ChromeOptions();
         //options.setBinary("/usr/bin/google-chrome");
-        options.addArguments("--headless");
+         //options.addArguments("--headless");
         // options.addArguments("--no-sandbox");
         // options.addArguments("--disable-dev-shm-usage");
         // options.addArguments("--remote-allow-origins=*");
@@ -89,6 +89,7 @@ public class ScrapingService {
             // 10 iterations for testing, normally use flights.size()
             for(int i = 0; i < flights.size(); i++) {
                 try {
+                    Thread.sleep(250);
                     Flight flight = new Flight();
                     js.executeScript("window.scrollBy(0,10000)", "");
                     button = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".zISZ5c.QB2Jof")));
@@ -179,6 +180,81 @@ public class ScrapingService {
         Thread.sleep(2000);
         
         WebElement returnFlightLink = retryFindElement(".gQ6yfe.m7VU8c", 20, flights.get(0));
+
+        // setting return flight data
+        Thread.sleep(250);
+        String input = returnFlightLink.getText();
+        String[] dataLines = input.split("\n");
+        
+        for(int i = 0; i < dataLines.length; i++) {
+            // stops
+            if(dataLines[i].contains("stop")) {
+                List<Stop> stops = new ArrayList<>();
+                int numStops = 0;
+                if(!dataLines[i].equals("Nonstop")) {
+                    numStops = Integer.parseInt(dataLines[i].substring(0, 1));
+                    if(numStops == 1) {
+                        String stopsString = dataLines[i + 1];  
+                        stops.add(getStopDuration(stopsString));
+                    }
+                    else {
+                        WebElement flightInfoButton = retryFindElement("button.VfPpkd-LgbsSe.nCP5yc.AjY5Oe", 20, returnFlightLink);
+                        flightInfoButton.click();
+
+                        List<WebElement> multipleFlightStops = retryFindElements("div.tvtJdb.eoY5cb.y52p7d", 20, returnFlightLink);
+                        
+                        for(WebElement stopElement : multipleFlightStops) {
+                            String layoverStringSplit[] = stopElement.getText().split("layover");
+                            String location = layoverStringSplit[1].trim();
+                            location = location.substring(location.indexOf('(') + 1, location.indexOf(')'));
+                            
+                            Stop stop = new Stop();
+                            stop.setTime(getMultipleStopDuration(layoverStringSplit[0].trim()));
+                            stop.setLocation(location);
+                            stops.add(stop);
+                        }
+
+                        flightInfoButton.click();
+                    }
+                }
+                flight.setReturnStops(stops);
+                flight.setReturnNumStops(numStops);
+            }
+        }
+
+        // leave time
+        int indexToRemoveLeave = dataLines[0].length() - 3;
+        String result1 = dataLines[0].substring(0, indexToRemoveLeave) + dataLines[0].substring(indexToRemoveLeave + 1);
+        flight.setReturnLeaveTime(result1);
+
+        // arrival time
+        int indexToRemoveArrive = -1;
+        if(dataLines[2].contains("+1")) {
+            indexToRemoveArrive = dataLines[2].length() - 5;
+        }
+        else{
+            indexToRemoveArrive = dataLines[2].length() - 3;
+        }
+        String result2 = dataLines[2].substring(0, indexToRemoveArrive) + dataLines[2].substring(indexToRemoveArrive + 1);
+        flight.setReturnArrivalTime(result2);
+
+        // duration
+        String flightTime = returnFlightLink.findElement(By.cssSelector("div.gvkrdb.AdWm1c.tPgKwe.ogfYpf")).getText();
+        String[] timeSplit = flightTime.split(" ");
+        int hours = 0;
+        int min = 0;
+        if(timeSplit.length == 2) {
+            hours = Integer.parseInt(timeSplit[0]);
+        }
+        if(timeSplit.length == 4) {
+            hours = Integer.parseInt(timeSplit[0]);
+            min = Integer.parseInt(timeSplit[2]);
+        }
+        if(timeSplit.length == 2 | timeSplit.length == 4) {
+            flight.setReturnTime(hours * 60 + min);
+        }
+
+
         returnFlightLink.click();
 
         // finding airline if it says Separate tickets booked together
@@ -283,36 +359,29 @@ public class ScrapingService {
                 int numStops = 0;
                 if(!dataLines[i].equals("Nonstop")) {
                     numStops = Integer.parseInt(dataLines[i].substring(0, 1));
-                    for(int j = 0; j < numStops; j++) {
-                        // adding data to "stops" attribute
-                        String stopsString = dataLines[i + j + 1];  
-                        String[] stopsStringSplit = stopsString.split(" ");
-                        int hours = 0;
-                        int min = 0;
-                        Stop stop = new Stop();
-
-                        if(stopsStringSplit.length == 3) {
-                            hours = Integer.parseInt(stopsStringSplit[0]);
-                            stop = new Stop();
-                            // sets the stop's location
-                            stop.setLocation(stopsStringSplit[2]);
-                            // sets the duration of the stop
-                            hours = Integer.parseInt(stopsStringSplit[0]);
-                        }
-                        if(stopsStringSplit.length == 5) {
-                            hours = Integer.parseInt(stopsStringSplit[0]);
-                            min = Integer.parseInt(stopsStringSplit[2]);
-                            stop = new Stop();
-                            // sets the stop's location
-                            stop.setLocation(stopsStringSplit[4]);
-                            // sets the duration of the stop
-                            hours = Integer.parseInt(stopsStringSplit[0]);
-                            min = Integer.parseInt(stopsStringSplit[2]);
-                        }
-                        stop.setTime(hours * 60 + min);
-                        stops.add(stop);
+                    if(numStops == 1) {
+                        String stopsString = dataLines[i + 1];  
+                        stops.add(getStopDuration(stopsString));
                     }
+                    else {
+                        WebElement flightInfoButton = retryFindElement("button.VfPpkd-LgbsSe.nCP5yc.AjY5Oe", 20, flightData);
+                        flightInfoButton.click();
 
+                        List<WebElement> multipleFlightStops = retryFindElements("div.tvtJdb.eoY5cb.y52p7d", 20, flightData);
+                        
+                        for(WebElement stopElement : multipleFlightStops) {
+                            String layoverStringSplit[] = stopElement.getText().split("layover");
+                            String location = layoverStringSplit[1].trim();
+                            location = location.substring(location.indexOf('(') + 1, location.indexOf(')'));
+                            
+                            Stop stop = new Stop();
+                            stop.setTime(getMultipleStopDuration(layoverStringSplit[0].trim()));
+                            stop.setLocation(location);
+                            stops.add(stop);
+                        }
+
+                        flightInfoButton.click();
+                    }
                 }
                 flight.setStops(stops);
                 flight.setNumStops(numStops);
@@ -336,7 +405,6 @@ public class ScrapingService {
 
         // duration
         String flightTime = flightData.findElement(By.cssSelector("div.gvkrdb.AdWm1c.tPgKwe.ogfYpf")).getText();
-        System.out.println("time element: " + flightTime);
         String[] timeSplit = flightTime.split(" ");
         int hours = 0;
         int min = 0;
@@ -357,5 +425,59 @@ public class ScrapingService {
         flight.setFlightImpactLink(url);
         
         return flight;
+    }
+
+    private static Stop getStopDuration(String stopsString) {
+        String[] stopsStringSplit = stopsString.split(" ");
+        int hours = 0;
+        int min = 0;
+        Stop stop = new Stop();
+
+        if(stopsStringSplit.length == 3) {
+            stop = new Stop();
+            // sets the stop's location
+            stop.setLocation(stopsStringSplit[2]);
+            // sets the duration of the stop
+            if(stopsStringSplit[1].contains("hr")) {
+                hours = Integer.parseInt(stopsStringSplit[0]);
+            }
+            if(stopsStringSplit[1].contains("min")) {
+                min = Integer.parseInt(stopsStringSplit[0]);
+            }
+        }
+        if(stopsStringSplit.length == 5) {
+            stop = new Stop();
+            // sets the stop's location
+            stop.setLocation(stopsStringSplit[4]);
+            // sets the duration of the stop
+            hours = Integer.parseInt(stopsStringSplit[0]);
+            min = Integer.parseInt(stopsStringSplit[2]);
+        }
+        stop.setTime(hours * 60 + min);
+
+        return stop;
+    }
+
+    private static int getMultipleStopDuration(String stopsString) {
+        String[] stopsStringSplit = stopsString.split(" ");
+        int hours = 0;
+        int min = 0;
+
+        if(stopsStringSplit.length == 2) {
+            // sets the duration of the stop
+            if(stopsStringSplit[1].contains("hr")) {
+                hours = Integer.parseInt(stopsStringSplit[0]);
+            }
+            if(stopsStringSplit[1].contains("min")) {
+                min = Integer.parseInt(stopsStringSplit[0]);
+            }
+            
+        }
+        if(stopsStringSplit.length == 4) {
+            hours = Integer.parseInt(stopsStringSplit[0]);
+            min = Integer.parseInt(stopsStringSplit[2]);
+        }
+
+        return hours * 60 + min;
     }
 }
