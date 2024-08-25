@@ -24,5 +24,35 @@ public class ScrapeController {
             e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }   
+
+    @PostMapping(path = "/update-price-link")
+    public @ResponseBody ResponseEntity<List<UpdateFlightQuery>> updateFlightPriceAndLink(@RequestBody List<Flight> request) throws InterruptedException {
+        try {
+            ScrapingUpdateService scrapingUpdateService = new ScrapingUpdateService(request);
+            List<UpdateFlightQuery> updateFlightQueries = scrapingUpdateService.checkNewPriceAndLink();
+    
+            return new ResponseEntity<>(updateFlightQueries, HttpStatus.OK);
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
+    
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(path = "/update-price")
+    public @ResponseBody ResponseEntity<List<UpdateFlightQuery>> updateFlightPrice(@RequestBody List<Flight> request) throws InterruptedException {
+        try {
+            ScrapingUpdateService scrapingUpdateService = new ScrapingUpdateService(request);
+            List<UpdateFlightQuery> updateFlightQueries = scrapingUpdateService.getJustPrice();
+    
+            return new ResponseEntity<>(updateFlightQueries, HttpStatus.OK);
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
+    
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -4,8 +4,12 @@ import lombok.Data;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 public class Flight {
+    //@JsonIgnore
+    private long id;
     private String airline;
     private int time;
     private double price;
@@ -24,6 +28,7 @@ public class Flight {
     private String flightImpactLink;
 
     // return flight data
+    private String returnAirline;
     private String returnLeaveTime;
     private String returnArrivalTime;
     @CollectionTable(name = "return_flight_stops")

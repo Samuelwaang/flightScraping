@@ -33,12 +33,12 @@ public class ScrapingService {
 
     public ScrapingService(String startPoint, String destination, String leaveDate, String returnDate) {
         // uncomment for completely new startup only
-         WebDriverManager.chromedriver().setup(); 
+        WebDriverManager.chromedriver().setup(); 
         
 
         ChromeOptions options = new ChromeOptions();
         //options.setBinary("/usr/bin/google-chrome");
-         //options.addArguments("--headless");
+        //options.addArguments("--headless");
         // options.addArguments("--no-sandbox");
         // options.addArguments("--disable-dev-shm-usage");
         // options.addArguments("--remote-allow-origins=*");
@@ -67,6 +67,7 @@ public class ScrapingService {
         this.returnDate = returnDate;
         this.link = "https://www.google.com/travel/flights?q=flights+from+" + startPoint + "+to+" + destination + "+on+" + leaveDate + "+through+" + returnDate;
 
+        System.out.println(link);
         driver.get(link);
     }
 
@@ -87,7 +88,8 @@ public class ScrapingService {
             driver.get(link);
     
             // 10 iterations for testing, normally use flights.size()
-            for(int i = 0; i < flights.size(); i++) {
+            System.out.println(flights.size());
+            for(int i = 0; i < 5; i++) {
                 try {
                     Thread.sleep(250);
                     Flight flight = new Flight();
@@ -100,8 +102,7 @@ public class ScrapingService {
                     flights = retryFindElements(".pIav2d", 20, null);
                     Thread.sleep(500);
                     js.executeScript("window.scrollBy(0,-10000)", "");
-        
-                    System.out.println(flights.get(i).getText());
+
                     saveData(flight, flights.get(i));
                     ScrollEntity scrollEntity = findLinkWithScroll(flights.get(i), scrollAmount, flight, i);
                     scrollAmount = scrollEntity.getScroll();
@@ -111,7 +112,6 @@ public class ScrapingService {
                     flight.setFlightDestination(destination);
                     flight.setLeaveDate(leaveDate);
                     flight.setReturnDay(returnDate);
-                    System.out.println(flight);
         
                     flightList.add(flight);
                 }
@@ -119,10 +119,12 @@ public class ScrapingService {
                     continue;
                 }
             }
-    
+            driver.quit();
             return flightList;
         }
         catch(IndexOutOfBoundsException | IllegalArgumentException e) {
+            e.printStackTrace();
+            driver.quit();
             return flightList;
         }
 
@@ -186,6 +188,8 @@ public class ScrapingService {
         String input = returnFlightLink.getText();
         String[] dataLines = input.split("\n");
         
+        flight.setReturnAirline(dataLines[3]);
+
         for(int i = 0; i < dataLines.length; i++) {
             // stops
             if(dataLines[i].contains("stop")) {
@@ -261,7 +265,6 @@ public class ScrapingService {
         if(flight.getAirline().contains("Separate")) {
             Thread.sleep(1000);
             flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
-            System.out.println(flights.size());
             Thread.sleep(2000);
             flight.setAirline(retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(0)).getText());
         }
@@ -277,6 +280,30 @@ public class ScrapingService {
                 airlines += " ," + retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(i)).getText();
             }
             flight.setAirline(airlines);
+        }
+
+        // also finding airlines for same issues as above but for return flight
+        // Seperate
+        if(flight.getReturnAirline().contains("Separate")) {
+            Thread.sleep(1000);
+            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            Thread.sleep(2000);
+            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            flight.setReturnAirline(retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(1)).getText());
+        }
+
+        // Self Transfer
+        if(flight.getReturnAirline().contains("Self")) {
+            Thread.sleep(1000);
+            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            Thread.sleep(2000);
+            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            String airlines = "";
+            airlines += retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(1)).getText();
+            for(int i = 1; i < flights.size(); i++) {
+                airlines += " ," + retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(i)).getText();
+            }
+            flight.setReturnAirline(airlines);
         }
 
         currentUrl = driver.getCurrentUrl();
@@ -313,9 +340,8 @@ public class ScrapingService {
         catch(Exception e) {
             System.out.println("can't find");
         }
- 
-        return null;
 
+        return null;
     }
 
     public static List<WebElement> retryFindElements(String by, int attempts, WebElement mainElement) throws InterruptedException {
@@ -349,7 +375,12 @@ public class ScrapingService {
         for(int i = 0; i < dataLines.length; i++) {
             // price
             if(dataLines[i].contains("$")) {
-                price = Double.parseDouble(dataLines[i].substring(1));
+                String priceString = dataLines[i].substring(1);
+                if(priceString.contains(",")) {
+                    int indexOfComma = priceString.indexOf(",");
+                    priceString = priceString.substring(0, indexOfComma) + priceString.substring(indexOfComma + 1);
+                }
+                price = Double.parseDouble(priceString);
                 flight.setPrice(price);
             }
 
@@ -370,6 +401,8 @@ public class ScrapingService {
                         List<WebElement> multipleFlightStops = retryFindElements("div.tvtJdb.eoY5cb.y52p7d", 20, flightData);
                         
                         for(WebElement stopElement : multipleFlightStops) {
+                            Thread.sleep(100);
+
                             String layoverStringSplit[] = stopElement.getText().split("layover");
                             String location = layoverStringSplit[1].trim();
                             location = location.substring(location.indexOf('(') + 1, location.indexOf(')'));
@@ -480,4 +513,8 @@ public class ScrapingService {
 
         return hours * 60 + min;
     }
+
+
+
+    
 }
