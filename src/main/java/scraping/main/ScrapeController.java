@@ -15,15 +15,31 @@ public class ScrapeController {
     
     @PostMapping(path = "/get")
     public @ResponseBody ResponseEntity<List<Flight>> getFlightData(@RequestBody ScrapeQuery request) throws InterruptedException {
-        try{
-            ScrapingService scraped = new ScrapingService(request.startPoint, request.destination, request.leaveDate, request.returnDate);
-            List<Flight> flights = scraped.scrape();
-            return new ResponseEntity<>(flights, HttpStatus.OK);
+        int maxRetries = 3;
+        int attempt = 0;
+        while (attempt < maxRetries) {
+            try {
+                ScrapingService scraped = new ScrapingService(request.startPoint, request.destination, request.leaveDate, request.returnDate);
+                List<Flight> flights = scraped.scrape();
+                return new ResponseEntity<>(flights, HttpStatus.OK);
+            } 
+            catch (Exception e) {
+                attempt++;
+                if (attempt >= maxRetries) {
+                    // after 3 attempts send the exception
+                    e.printStackTrace();
+                    return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+                try {
+                    Thread.sleep(10000);
+                } 
+                catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt(); 
+                    return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
         }
-        catch(Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }   
 
     @PostMapping(path = "/update-price-link")

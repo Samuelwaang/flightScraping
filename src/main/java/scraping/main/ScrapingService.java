@@ -38,7 +38,7 @@ public class ScrapingService {
 
         ChromeOptions options = new ChromeOptions();
         //options.setBinary("/usr/bin/google-chrome");
-        //options.addArguments("--headless");
+        options.addArguments("--headless");
         // options.addArguments("--no-sandbox");
         // options.addArguments("--disable-dev-shm-usage");
         // options.addArguments("--remote-allow-origins=*");
@@ -126,8 +126,7 @@ public class ScrapingService {
             e.printStackTrace();
             driver.quit();
             return flightList;
-        }
-
+        }   
     }
 
     public ScrollEntity findLinkWithScroll(WebElement flightElement, int scrollAmount, Flight flight, int flightIteration) throws InterruptedException  {
@@ -258,22 +257,23 @@ public class ScrapingService {
             flight.setReturnTime(hours * 60 + min);
         }
 
-
         returnFlightLink.click();
 
         // finding airline if it says Separate tickets booked together
         if(flight.getAirline().contains("Separate")) {
             Thread.sleep(1000);
-            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            flights = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("VfPpkd-WsjYwc")));
             Thread.sleep(2000);
+            flights = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("VfPpkd-WsjYwc")));
             flight.setAirline(retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(0)).getText());
         }
 
         // finding airline for Self Transfer
         if(flight.getAirline().contains("Self")) {
             Thread.sleep(1000);
-            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            flights = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("VfPpkd-WsjYwc")));
             Thread.sleep(2000);
+            flights = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("VfPpkd-WsjYwc")));
             String airlines = "";
             airlines += retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(0)).getText();
             for(int i = 1; i < flights.size(); i++) {
@@ -286,18 +286,18 @@ public class ScrapingService {
         // Seperate
         if(flight.getReturnAirline().contains("Separate")) {
             Thread.sleep(1000);
-            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            flights = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("VfPpkd-WsjYwc")));
             Thread.sleep(2000);
-            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            flights = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("VfPpkd-WsjYwc")));
             flight.setReturnAirline(retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(1)).getText());
         }
 
         // Self Transfer
         if(flight.getReturnAirline().contains("Self")) {
             Thread.sleep(1000);
-            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            flights = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("VfPpkd-WsjYwc")));
             Thread.sleep(2000);
-            flights = retryFindElements(".VfPpkd-WsjYwc.VfPpkd-WsjYwc-OWXEXe-INsAgc.KC1dQ.Usd1Ac.AaN0Dd.BCEBVd", 20, null);
+            flights = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className("VfPpkd-WsjYwc")));
             String airlines = "";
             airlines += retryFindElement(".sSHqwe.tPgKwe.ogfYpf", 20, flights.get(1)).getText();
             for(int i = 1; i < flights.size(); i++) {
