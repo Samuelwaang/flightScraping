@@ -20,7 +20,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class ScrapingUpdateService {
     private static WebDriver driver;
@@ -31,7 +30,7 @@ public class ScrapingUpdateService {
 
     public ScrapingUpdateService(List<Flight> inputtedFlightList) {
         // uncomment for completely new startup only
-        WebDriverManager.chromedriver().setup();
+        //WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
 
         options.addArguments("--headless");
