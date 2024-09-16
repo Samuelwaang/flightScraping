@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 public class Flight {
-    //@JsonIgnore
+    // @JsonIgnore
     private long id;
     private String airline;
     private int time;
@@ -26,6 +26,8 @@ public class Flight {
     private List<Stop> stops;
     private int numStops;
     private String flightImpactLink;
+    private String tripLength;
+    private boolean carryOnAllowed;
 
     // return flight data
     private String returnAirline;
