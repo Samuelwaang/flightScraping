@@ -396,6 +396,12 @@ public class ScrapingService {
                 }
                 flight.setStops(stops);
                 flight.setNumStops(numStops);
+                int stopTotalDuration = 0;
+                // total stop duration
+                for (Stop stop : stops) {
+                    stopTotalDuration += stop.getTime();
+                }
+                flight.setTotalStopDuration(stopTotalDuration);
             }
         }
         // leave time

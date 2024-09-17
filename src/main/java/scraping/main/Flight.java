@@ -28,6 +28,7 @@ public class Flight {
     private String flightImpactLink;
     private String tripLength;
     private boolean carryOnAllowed;
+    private int totalStopDuration;
 
     // return flight data
     private String returnAirline;

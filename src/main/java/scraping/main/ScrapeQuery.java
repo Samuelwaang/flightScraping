@@ -10,4 +10,5 @@ public class ScrapeQuery {
     String destination;
     String leaveDate;
     String returnDate;
+    String tripLength;
 }
